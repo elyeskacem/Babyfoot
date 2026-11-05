@@ -1,34 +1,53 @@
 // Game kick-off hour (24h clock, local time).
 export const KICKOFF_HOUR = 12;
+// The game window ends here; from this hour the countdown restarts for tomorrow's kick-off.
+export const RESET_HOUR = 14;
+
+// Returns a Date at `hour`:00:00 on the day of `base` shifted by `dayOffset` days.
+function atHour(base, hour, dayOffset = 0) {
+  const d = new Date(base);
+  d.setDate(d.getDate() + dayOffset);
+  d.setHours(hour, 0, 0, 0);
+  return d;
+}
 
 /**
  * Works out what the game is doing right now.
- * - 'countdown': before today's 12:00 -> remainingMs until kick-off
- * - 'playing'  : from 12:00 until midnight -> elapsedMs since kick-off
+ * - 'playing'   : 12:00 -> 14:00, elapsedMs since kick-off
+ * - 'countdown' : otherwise, remainingMs until the next 12:00.
+ *                 The countdown restarts at 14:00 and runs until the next day's 12:00.
  */
 export function getGameStatus(now) {
-  const kickoff = new Date(now);
-  kickoff.setHours(KICKOFF_HOUR, 0, 0, 0);
+  const kickoffToday = atHour(now, KICKOFF_HOUR);
+  const resetToday = atHour(now, RESET_HOUR);
 
-  const dayStart = new Date(now);
-  dayStart.setHours(0, 0, 0, 0);
-
-  if (now < kickoff) {
-    const daySpan = kickoff - dayStart;
+  if (now >= kickoffToday && now < resetToday) {
     return {
-      status: 'countdown',
-      remainingMs: kickoff - now,
-      elapsedMs: 0,
-      // 0 at midnight, 1 at kick-off: how far we are through the countdown day
-      progress: Math.min(1, Math.max(0, (now - dayStart) / daySpan)),
+      status: 'playing',
+      remainingMs: 0,
+      elapsedMs: now - kickoffToday,
+      progress: 1,
     };
   }
 
+  // A countdown cycle runs from the last reset (14:00) to the next kick-off (12:00).
+  let cycleStart;
+  let target;
+  if (now < kickoffToday) {
+    cycleStart = atHour(now, RESET_HOUR, -1); // yesterday 14:00
+    target = kickoffToday;
+  } else {
+    cycleStart = resetToday; // today 14:00
+    target = atHour(now, KICKOFF_HOUR, 1); // tomorrow 12:00
+  }
+
+  const span = target - cycleStart;
   return {
-    status: 'playing',
-    remainingMs: 0,
-    elapsedMs: now - kickoff,
-    progress: 1,
+    status: 'countdown',
+    remainingMs: target - now,
+    elapsedMs: 0,
+    // 0 at the reset, 1 at kick-off: how far through the current countdown we are
+    progress: Math.min(1, Math.max(0, (now - cycleStart) / span)),
   };
 }
 
