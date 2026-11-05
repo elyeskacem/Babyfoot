@@ -1,0 +1,329 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --accent: #fcc419;
+  --text: #f8f9fa;
+  --muted: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--text);
+  background: radial-gradient(circle at top, #1e293b 0%, #0f172a 60%, #020617 100%);
+  overflow-x: hidden;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+/* ---------- header ---------- */
+.header h1 {
+  margin: 0;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  letter-spacing: 0.02em;
+  background: linear-gradient(90deg, #fcc419, #ff922b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: title-in 0.8s ease-out both;
+}
+
+.subtitle {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+@keyframes title-in {
+  from {
+    opacity: 0;
+    transform: translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- countdown ---------- */
+.label {
+  margin: 0 0 8px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  font-size: 0.85rem;
+}
+
+.clock {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+}
+
+.unit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: clamp(70px, 18vw, 130px);
+}
+
+.digit {
+  display: inline-block;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: clamp(3.5rem, 14vw, 7.5rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 24px rgba(252, 196, 25, 0.35);
+  animation: tick 0.4s ease-out;
+}
+
+.colon {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: clamp(3rem, 11vw, 6rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--accent);
+  animation: blink 1s steps(2, start) infinite;
+}
+
+.unit-label {
+  margin-top: 4px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: 0.75rem;
+}
+
+@keyframes tick {
+  from {
+    opacity: 0.25;
+    transform: translateY(-25%) scale(1.12);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes blink {
+  to {
+    opacity: 0.2;
+  }
+}
+
+/* progress bar with a rolling ball at the front */
+.progress {
+  position: relative;
+  width: min(560px, 90vw);
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #4dabf7, #fcc419);
+  transition: width 0.25s linear;
+}
+
+.progress-ball {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 22px;
+  line-height: 1;
+  transition: left 0.25s linear;
+}
+
+/* ---------- kick-off state ---------- */
+.gameon-title {
+  margin: 0;
+  font-size: clamp(3rem, 11vw, 6.5rem);
+  font-weight: 900;
+  color: var(--accent);
+  text-shadow: 0 0 30px rgba(252, 196, 25, 0.6);
+  animation: pulse 0.9s ease-in-out infinite alternate;
+}
+
+.gameon-sub {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+}
+
+@keyframes pulse {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.06);
+  }
+}
+
+/* ---------- babyfoot table (SVG) ---------- */
+.table {
+  width: min(820px, 100%);
+  height: auto;
+  filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.5));
+}
+
+/* idle: players wobble a little */
+.table .player.wobble {
+  animation: wobble 2.4s ease-in-out infinite;
+}
+
+/* playing: each rod turns a full 360deg (scaleY passes through -1) */
+.table .player.kick {
+  animation: spin 0.8s linear infinite;
+}
+
+.table .ball-track.idle {
+  animation: bob 1.6s ease-in-out infinite;
+}
+
+.table .ball-track.run {
+  animation: ball-run 4s ease-in-out infinite alternate;
+}
+
+@keyframes wobble {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.6);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: scaleY(1);
+  }
+  25% {
+    transform: scaleY(0.15);
+  }
+  50% {
+    transform: scaleY(-1);
+  }
+  75% {
+    transform: scaleY(0.15);
+  }
+  100% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes ball-run {
+  0% {
+    transform: translate(-280px, 20px);
+  }
+  25% {
+    transform: translate(-120px, -55px);
+  }
+  50% {
+    transform: translate(60px, 60px);
+  }
+  75% {
+    transform: translate(200px, -30px);
+  }
+  100% {
+    transform: translate(290px, 0);
+  }
+}
+
+/* ---------- button ---------- */
+.kickoff-btn {
+  padding: 12px 22px;
+  border: 0;
+  border-radius: 999px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  background: var(--accent);
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(252, 196, 25, 0.25);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.kickoff-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(252, 196, 25, 0.35);
+}
+
+.kickoff-btn:active {
+  transform: scale(0.97);
+}
+
+.kickoff-btn:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: 3px;
+}
+
+/* ---------- confetti ---------- */
+.confetti {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.piece {
+  position: absolute;
+  top: -5vh;
+  width: 10px;
+  height: 14px;
+  border-radius: 2px;
+  animation-name: fall;
+  animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1);
+  animation-fill-mode: both;
+}
+
+@keyframes fall {
+  from {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(var(--drift), 115vh, 0) rotate(var(--rot));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
