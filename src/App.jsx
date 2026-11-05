@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import BabyfootTable from './components/BabyfootTable.jsx';
 import Confetti from './components/Confetti.jsx';
-import { getGameStatus, splitDuration, KICKOFF_HOUR } from './utils/time.js';
+import { getGameStatus, splitDuration } from './utils/time.js';
 
 const pad = (n) => String(n).padStart(2, '0');
 const PREVIEW_MS = 8000;
@@ -56,7 +56,7 @@ export default function App() {
     <main className={`app ${isPlaying ? 'is-playing' : 'is-counting'}`}>
       <header className="header">
         <h1>Babyfoot Break</h1>
-        <p className="subtitle">Kick-off every day at {KICKOFF_HOUR}:00</p>
+        <p className="subtitle">Games every day at 12:00–14:00 and 17:00–19:00</p>
       </header>
 
       {isPlaying ? (

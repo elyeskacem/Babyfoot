@@ -1,7 +1,8 @@
-// Game kick-off hour (24h clock, local time).
-export const KICKOFF_HOUR = 12;
-// The game window ends here; from this hour the countdown restarts for tomorrow's kick-off.
-export const RESET_HOUR = 14;
+// Daily game windows (24h clock, local time). Each game runs from `start` to `end`.
+export const GAME_WINDOWS = [
+  { start: 12, end: 14 },
+  { start: 17, end: 19 },
+];
 
 // Returns a Date at `hour`:00:00 on the day of `base` shifted by `dayOffset` days.
 function atHour(base, hour, dayOffset = 0) {
@@ -13,41 +14,43 @@ function atHour(base, hour, dayOffset = 0) {
 
 /**
  * Works out what the game is doing right now.
- * - 'playing'   : 12:00 -> 14:00, elapsedMs since kick-off
- * - 'countdown' : otherwise, remainingMs until the next 12:00.
- *                 The countdown restarts at 14:00 and runs until the next day's 12:00.
+ * - 'playing'   : inside a game window -> elapsedMs since that game started
+ * - 'countdown' : otherwise -> remainingMs until the next game starts.
+ *                 Progress runs from the end of the last game to the next start.
  */
 export function getGameStatus(now) {
-  const kickoffToday = atHour(now, KICKOFF_HOUR);
-  const resetToday = atHour(now, RESET_HOUR);
-
-  if (now >= kickoffToday && now < resetToday) {
-    return {
-      status: 'playing',
-      remainingMs: 0,
-      elapsedMs: now - kickoffToday,
-      progress: 1,
-    };
+  for (const w of GAME_WINDOWS) {
+    const start = atHour(now, w.start);
+    const end = atHour(now, w.end);
+    if (now >= start && now < end) {
+      return {
+        status: 'playing',
+        remainingMs: 0,
+        elapsedMs: now - start,
+        progress: 1,
+      };
+    }
   }
 
-  // A countdown cycle runs from the last reset (14:00) to the next kick-off (12:00).
-  let cycleStart;
-  let target;
-  if (now < kickoffToday) {
-    cycleStart = atHour(now, RESET_HOUR, -1); // yesterday 14:00
-    target = kickoffToday;
-  } else {
-    cycleStart = resetToday; // today 14:00
-    target = atHour(now, KICKOFF_HOUR, 1); // tomorrow 12:00
+  // Look at yesterday, today and tomorrow so the next start / last end always exists.
+  let nextStart = null;
+  let lastEnd = null;
+  for (const offset of [-1, 0, 1]) {
+    for (const w of GAME_WINDOWS) {
+      const start = atHour(now, w.start, offset);
+      const end = atHour(now, w.end, offset);
+      if (start > now && (nextStart === null || start < nextStart)) nextStart = start;
+      if (end <= now && (lastEnd === null || end > lastEnd)) lastEnd = end;
+    }
   }
 
-  const span = target - cycleStart;
+  const span = nextStart - lastEnd;
   return {
     status: 'countdown',
-    remainingMs: target - now,
+    remainingMs: nextStart - now,
     elapsedMs: 0,
-    // 0 at the reset, 1 at kick-off: how far through the current countdown we are
-    progress: Math.min(1, Math.max(0, (now - cycleStart) / span)),
+    // 0 right after a game ends, 1 when the next one starts
+    progress: Math.min(1, Math.max(0, (now - lastEnd) / span)),
   };
 }
 
